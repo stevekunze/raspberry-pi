@@ -1,0 +1,44 @@
+---
+- name: Does essential Tasks when setting up a server with debian
+  hosts: all
+  gather_facts: false
+  tasks:
+
+    - name: Update cache and upgrade system
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+        upgrade: safe
+
+    - name: Install sudo
+      ansible.builtin.apt:
+        name: sudo
+        state: present
+        update_cache: true
+
+    - name: Create new group called admind.
+      ansible.builtin.group:
+        name: admind
+        state: present
+
+    - name: Create a new user called admind and add him to groups admind and sudo.
+      ansible.builtin.user:
+        name: admind # change to desired username
+        comment: System Administrator # change to desired full Name or remove Line
+        password: '$6$BwNZ3HGxLLVOJ0nh$dBD6Ub3OENWBJjNdD3cPkBEzhciIJEZXXO0JBFCWn6mvJlwYn0wgDw9QpaiH8gDtjhoJctYEX4f.mzRV9lr450' # hashed password
+        uid: 1030 # Set a UserID above 1000 because <1000 is for system Users
+        groups: admind, sudo,
+        create_home: true
+        shell: /bin/bash
+
+    - name: Install packages
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: true
+      loop:
+        - mc
+        - htop
+        - micro
+        - unattended-upgrades
+        - gnupg
