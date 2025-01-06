@@ -26,7 +26,7 @@
         name: admind # change to desired username
         comment: System Administrator # change to desired full Name or remove Line
         password: '$6$BwNZ3HGxLLVOJ0nh$dBD6Ub3OENWBJjNdD3cPkBEzhciIJEZXXO0JBFCWn6mvJlwYn0wgDw9QpaiH8gDtjhoJctYEX4f.mzRV9lr450' # hashed password
-        uid: 1030 # Set a UserID above 1000 because <1000 is for system Users
+        uid: 1000 # Set a UserID above 1000 because <1000 is for system Users
         groups: admind, sudo,
         create_home: true
         shell: /bin/bash
@@ -42,3 +42,16 @@
         - micro
         - unattended-upgrades
         - gnupg
+    
+    - name: Create .ssh direcory
+      ansible.builtin.file:
+        path: "/home/admind/.ssh/"
+        state: directory
+    - name: Create authorized_keys file
+      ansible.builtin.file:
+        path: "/home/admind/.ssh/authorized_keys"
+        state: touch
+    - name: Put pubkey
+      ansible.builtin.lineinfile:
+        path: "/home/admind/.ssh/authorized_keys"
+        line: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICp39Dq3npgj7QSoZXRAEQlEs8ATEPj+a8s+LYptNeli steve@steve-t480"
