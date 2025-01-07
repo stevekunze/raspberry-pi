@@ -1,0 +1,56 @@
+---
+- name: Setts up SSH Key authentication for a specific users and hardens the ssh config.
+  hosts: all
+  gather_facts: false
+  tasks:
+
+    - name: Create .ssh directory
+      ansible.builtin.file:
+        path: "/home/admind/.ssh/"
+        state: directory
+        owner: admind
+        group: admind
+        mode: '0755'
+    - name: Create authorized_keys file
+      ansible.builtin.file:
+        path: "/home/admind/.ssh/authorized_keys"
+        state: touch
+        owner: admind
+        group: admind
+        mode: '0644'
+    - name: Copy public-key into authorized_keys file
+      ansible.builtin.lineinfile:
+        path: "/home/admind/.ssh/authorized_keys"
+        line: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICp39Dq3npgj7QSoZXRAEQlEs8ATEPj+a8s+LYptNeli steve@steve-t480"
+
+    - name: Update SSH configuration to be more secure (thanks Jeff!)
+      ansible.builtin.lineinfile:
+        dest: "/etc/ssh/sshd_config"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+        validate: 'sshd -T -f %s'
+        mode: '0644'
+      with_items:
+        - regexp: "^PasswordAuthentication"
+          line: "PasswordAuthentication no"
+        - regexp: "^PermitRootLogin"
+          line: "PermitRootLogin no"
+      #  - regexp: "^Port"
+      #    line: "Port {{ ssh_port }}"
+      #  - regexp: "^UseDNS"
+      #    line: "UseDNS no"
+        - regexp: "^PermitEmptyPasswords"
+          line: "PermitEmptyPasswords no"
+        - regexp: "^PubKeyAuthentication"
+          line: "PubKeyAuthentication yes"
+        - regexp: "^ChallengeResponseAuthentication"
+          line: "ChallengeResponseAuthentication no"
+       # - regexp: "^GSSAPIAuthentication"
+      #  line: "GSSAPIAuthentication no"
+       # - regexp: "^X11Forwarding"
+       #   line: "X11Forwarding no"
+    - name: Restart service httpd, in all cases
+      ansible.builtin.service:
+        name: 'sshd'
+        state: restarted

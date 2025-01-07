@@ -1,2 +1,7 @@
 [pi]
 192.168.178.116
+
+
+[pi:vars]
+ansible_ssh_user=root 
+ansible_port=22 
