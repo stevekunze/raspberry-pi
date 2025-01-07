@@ -10,7 +10,7 @@
         cache_valid_time: 3600
         upgrade: safe
 
-    - name: Install sudo
+    - name: Install sudo # may put that package into the isntall packages loopg
       ansible.builtin.apt:
         name: sudo
         state: present
@@ -42,16 +42,51 @@
         - micro
         - unattended-upgrades
         - gnupg
-    
+
     - name: Create .ssh direcory
       ansible.builtin.file:
         path: "/home/admind/.ssh/"
         state: directory
+        owner: admind
+        group: admind
+        mode: '0744'
     - name: Create authorized_keys file
       ansible.builtin.file:
         path: "/home/admind/.ssh/authorized_keys"
         state: touch
-    - name: Put pubkey
+        owner: admind
+        group: admind
+        mode: '0644'
+    - name: Copy public-key into authorized_keys file
       ansible.builtin.lineinfile:
         path: "/home/admind/.ssh/authorized_keys"
         line: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICp39Dq3npgj7QSoZXRAEQlEs8ATEPj+a8s+LYptNeli steve@steve-t480"
+
+    - name: Update SSH configuration to be more secure (thanks Jeff!)
+      ansible.builtin.lineinfile:
+        dest: "/etc/ssh/sshd_config"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+        validate: 'sshd -T -f %s'
+        mode: '0644'
+      with_items:
+        - regexp: "^PasswordAuthentication"
+          line: "PasswordAuthentication no"
+        - regexp: "^PermitRootLogin"
+          line: "PermitRootLogin no"
+      #  - regexp: "^Port"
+      #    line: "Port {{ ssh_port }}"
+      #  - regexp: "^UseDNS"
+      #    line: "UseDNS no"
+        - regexp: "^PermitEmptyPasswords"
+          line: "PermitEmptyPasswords no"
+        - regexp: "^PublicKeyAuthentication"
+          line: "PublicKeyAuthentication yes"
+        - regexp: "^ChallengeResponseAuthentication"
+          line: "ChallengeResponseAuthentication no"
+       # - regexp: "^GSSAPIAuthentication"
+      #  line: "GSSAPIAuthentication no"
+       # - regexp: "^X11Forwarding"
+       #   line: "X11Forwarding no"
+      notify: Restart SSH daemon
