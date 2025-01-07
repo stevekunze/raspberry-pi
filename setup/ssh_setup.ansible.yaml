@@ -3,7 +3,7 @@
   hosts: all
   gather_facts: false
   tasks:
-  
+ 
     - name: Create .ssh directory
       ansible.builtin.file:
         path: "/home/admind/.ssh/"
