@@ -3,7 +3,7 @@
   hosts: all
   gather_facts: false
   tasks:
-
+  
     - name: Create .ssh directory
       ansible.builtin.file:
         path: "/home/admind/.ssh/"
@@ -21,7 +21,7 @@
     - name: Copy public-key into authorized_keys file
       ansible.builtin.lineinfile:
         path: "/home/admind/.ssh/authorized_keys"
-        line: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICp39Dq3npgj7QSoZXRAEQlEs8ATEPj+a8s+LYptNeli steve@steve-t480"
+        line: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICp39Dq3npgj7QSoZXRAEQlEs8ATEPj+a8s+LYptNeli steve@steve-t480" # replace with new public-key
 
     - name: Update SSH configuration to be more secure (thanks Jeff!)
       ansible.builtin.lineinfile:
